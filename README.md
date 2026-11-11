@@ -109,13 +109,17 @@ vi Dockerfile
 Add:
 
 ```dockerfile
-FROM python:3
+FROM python:3.12
 
 WORKDIR /app
 
-RUN pip install django==3.2
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
 
 COPY . .
+
+EXPOSE 8000
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 ```
@@ -145,6 +149,7 @@ http://YOUR_PUBLIC_IP:8000/
 # Step 13: Install Jenkins Using Docker
 
 ```bash
+
 sudo docker pull jenkins/jenkins:latest
 
 sudo docker run -d -p 8080:8080 docker.io/jenkins/jenkins:latest
@@ -161,6 +166,19 @@ http://YOUR_PUBLIC_IP:8080
 ```
 
 # Step 14: Configure Jenkins Agent
+
+# Unlock Jenkins
+sudo docker exec [container-id] cat /var/jenkins_home/secrets/initialAdminPassword
+
+Replace [container-id] with the Jenkins container ID.
+
+Open Jenkins and paste the password into the Unlock Jenkins page.
+
+Configure Jenkins Agent:
+
+Get the current working directory:
+
+pwd
 
 ```text
 Name : todo-agent
@@ -208,18 +226,6 @@ sudo docker images
 # Remove image
 sudo docker rmi <image-id>
 ```
-
-# Future Improvements
-
-- Jenkinsfile
-- Docker Compose
-- Nginx Reverse Proxy
-- HTTPS/SSL
-- Docker Hub
-- Kubernetes
-- Terraform
-- SonarQube
-- Prometheus and Grafana
 
 ## Author
 
