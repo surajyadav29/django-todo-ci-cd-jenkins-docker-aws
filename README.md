@@ -1,520 +1,225 @@
-# CI/CD Pipeline Implementation Using Jenkins, Docker & AWS EC2
+# Step 1: Launch AWS EC2 Instance
 
-## Project Description
+- Launch an Amazon Linux EC2 instance.
+- Create/select a key pair.
+- Configure Security Group inbound rules:
 
-This project demonstrates the implementation of a complete CI/CD pipeline for deploying a Django web application using Jenkins, Docker, GitHub, and AWS EC2.
-
-The objective of this project is to automate application deployment and showcase practical DevOps skills including source code management, containerization, continuous integration, continuous deployment, Linux administration, and cloud deployment.
-
----
-
-# DevOps Technologies Used
-
-## Version Control
-
-* Git
-* GitHub
-
-## CI/CD
-
-* Jenkins
-
-## Containerization
-
-* Docker
-
-## Cloud Platform
-
-* AWS EC2
-
-## Operating System
-
-* Amazon Linux
-
-## Application Stack
-
-* Python
-* Django
-* SQLite
-
----
-
-# DevOps Skills Demonstrated
-
-* Source Code Management using Git
-* Repository Management using GitHub
-* Linux Server Administration
-* AWS EC2 Provisioning
-* Docker Image Creation
-* Docker Container Management
-* Jenkins Installation and Configuration
-* Jenkins Agent Configuration
-* Continuous Integration (CI)
-* Continuous Deployment (CD)
-* Application Deployment Automation
-* Process Monitoring and Troubleshooting
-
----
-
-# Project Workflow
-
-```text
-Developer Pushes Code
-          ↓
-       GitHub
-          ↓
-       Jenkins
-          ↓
-     Build Process
-          ↓
-   Docker Image Build
-          ↓
- Container Deployment
-          ↓
-      AWS EC2 Server
-          ↓
- Live Application
-```
-
----
-
-# Step 1: Local Environment Setup
-
-Clone the repository.
-
-```bash
-git clone https://github.com/surajyadav29/todo.git
-```
-
-Install Virtual Environment.
-
-```bash
-pip install virtualenv
-```
-
-Create Virtual Environment.
-
-```bash
-virtualenv -p python3.14.3 env
-```
-
-Activate Virtual Environment.
-
-### Windows
-
-```powershell
-.\env\Scripts\Activate.ps1
-```
-
-Move to project directory.
-
-```bash
-cd todo
-```
-
-Generate requirements file.
-
-```bash
-pip freeze > requirements.txt
-```
-
----
-
-# Step 2: Launch AWS EC2 Instance
-
-Create an EC2 instance using Amazon Linux.
-
-Configure Security Group:
-
-| Port | Purpose            |
-| ---- | ------------------ |
-| 22   | SSH Access         |
+| Port | Purpose |
+|---|---|
+| 22 | SSH |
 | 8000 | Django Application |
-| 8080 | Jenkins Server     |
+| 8080 | Jenkins |
 
-Connect to EC2 using SSH.
-
-Create project directory.
+Connect to EC2:
 
 ```bash
-mkdir todo
-cd todo
+ssh -i "your-key.pem" ec2-user@YOUR_PUBLIC_IP
 ```
 
----
-
-# Step 3: Install Git and Clone Repository
-
-Install Git.
+# Step 2: Install Git and Clone Repository
 
 ```bash
 sudo yum install git -y
+
+git clone https://github.com/surajyadav29/django-todo-ci-cd-jenkins-docker-aws.git
+
+cd django-todo-ci-cd-jenkins-docker-aws
 ```
 
-Clone Repository.
+# Step 3: Check Python and Create Virtual Environment
 
 ```bash
-sudo git clone https://github.com/surajyadav29/todo.git
+python3.12 --version
+
+python3.12 -m venv env
+
+source env/bin/activate
 ```
 
-Move to project directory.
+# Step 4: Install Project Requirements
 
 ```bash
-cd todo
+python -m pip install --upgrade pip
+
+pip install -r requirements.txt
 ```
 
-Verify Git Installation.
+# Step 5: Verify Python and Django
 
 ```bash
-git --version
+python --version
+
+python -m django --version
 ```
 
----
+# Step 6: Configure Django Settings
 
-# Step 4: Install Python and Django
-
-Install Python Package Manager.
+Open settings file:
 
 ```bash
-sudo yum install python3-pip -y
+nano todoApp/settings.py
 ```
 
-Update Server Packages.
+Update `ALLOWED_HOSTS` with your EC2 Public IPv4 address:
 
-```bash
-sudo yum update -y
+```python
+ALLOWED_HOSTS = ['YOUR_PUBLIC_IP', 'localhost', '127.0.0.1']
 ```
 
-Install Django.
+Save: `Ctrl + O` → `Enter` → `Ctrl + X`.
+
+# Step 7: Check Configuration and Apply Migrations
 
 ```bash
-pip install django
+python manage.py check
+
+python manage.py migrate
 ```
 
-Verify Django.
+# Step 8: Run Django Application
 
 ```bash
-python3 -m django --version
-```
-
----
-
-# Step 5: Run Django Application
-
-Create database migrations.
-
-```bash
-python3.9 manage.py makemigrations
-```
-
-Apply migrations.
-
-```bash
-python3.9 manage.py migrate
-```
-
-Run application.
-
-```bash
-python3 manage.py runserver 0.0.0.0:8000
-```
-
-Run application in background.
-
-```bash
-nohup python3.9 manage.py runserver 0.0.0.0:8000 &
+python manage.py runserver 0.0.0.0:8000
 ```
 
 Application URL:
 
 ```text
-http://<EC2-Public-IP>:8000
+http://YOUR_PUBLIC_IP:8000/
 ```
 
----
-
-# Step 6: Linux Troubleshooting Commands
-
-Check running process on port 8000.
-
-```bash
-lsof -i:8000
-```
-
-Kill process.
-
-```bash
-kill -9 PID
-```
-
-Restart application.
-
-```bash
-python3 manage.py runserver 0.0.0.0:8000
-```
-
----
-
-# Step 7: Install Docker
-
-Install Docker.
+# Step 9: Install Docker
 
 ```bash
 sudo yum install docker -y
-```
 
-Start Docker Service.
-
-```bash
 sudo systemctl start docker
-```
 
-Enable Docker Service.
-
-```bash
 sudo systemctl enable docker
-```
 
-Verify Installation.
-
-```bash
 docker --version
 ```
 
----
-
-# Step 8: Create Dockerfile
-
-Create Dockerfile.
+# Step 10: Create Dockerfile
 
 ```bash
-sudo vi Dockerfile
+vi Dockerfile
 ```
 
-Dockerfile:
+Add:
 
 ```dockerfile
-FROM python:3.12
+FROM python:3
 
 WORKDIR /app
 
-COPY requirements.txt .
-
-RUN pip install -r requirements.txt
+RUN pip install django==3.2
 
 COPY . .
 
-RUN python manage.py migrate
-
-CMD ["python","manage.py","runserver","0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 ```
 
----
-
-# Step 9: Build Docker Image
-
-Build Docker image.
+# Step 11: Build Docker Image
 
 ```bash
 sudo docker build . -t todo
-```
 
-Verify image.
-
-```bash
 sudo docker images
 ```
 
----
-
-# Step 10: Deploy Docker Container
-
-Run container.
+# Step 12: Run Docker Container
 
 ```bash
 sudo docker run -d -p 8000:8000 --name todo-app todo
-```
 
-Check running containers.
-
-```bash
 sudo docker ps
 ```
 
 Application URL:
 
 ```text
-http://<EC2-Public-IP>:8000
+http://YOUR_PUBLIC_IP:8000/
 ```
 
----
-
-# Step 11: Install Jenkins Using Docker
-
-Pull Jenkins Image.
+# Step 13: Install Jenkins Using Docker
 
 ```bash
 sudo docker pull jenkins/jenkins:latest
-```
 
-Run Jenkins Container.
-
-```bash
 sudo docker run -d -p 8080:8080 docker.io/jenkins/jenkins:latest
-```
 
-Verify Jenkins Container.
-
-```bash
 sudo docker ps
-```
 
-Get Jenkins Initial Password.
-
-```bash
 sudo docker logs <container-id>
 ```
 
-Access Jenkins.
+Jenkins URL:
 
 ```text
-http://<EC2-Public-IP>:8080
+http://YOUR_PUBLIC_IP:8080
 ```
 
-Install Suggested Plugins and Create Admin User.
-
----
-
-# Step 12: Configure Jenkins Agent
-
-Create Jenkins Node/Agent.
-
-Agent Configuration:
+# Step 14: Configure Jenkins Agent
 
 ```text
 Name : todo-agent
-
 Remote Root Directory : <output of pwd>
-
 Labels : todo
 ```
 
-Provide project permissions.
+# Step 15: Create Jenkins Build Job
 
-```bash
-cd ..
-chmod 777 todo
-cd todo
-```
+- Source Code Management → Git
+- Repository URL → GitHub repository
+- Build Trigger → Build Now / GitHub Webhook
+- Agent Label → todo
 
----
-
-# Step 13: Create Jenkins Build Job
-
-Configure Jenkins Job:
-
-* Source Code Management → Git
-* Repository URL → GitHub Repository
-* Build Trigger → Build Now / GitHub Webhook
-* Agent Label → todo
-
-Build Commands:
+Build command:
 
 ```bash
 sudo docker build . -t todo
 ```
 
-Deploy Commands:
+Deployment command:
 
 ```bash
 sudo docker run -d -p 8000:8000 todo
 ```
 
----
-
-# Step 14: Application Update Process
-
-Whenever new code is pushed:
-
-1. Developer pushes code to GitHub.
-2. Jenkins fetches latest source code.
-3. Jenkins builds Docker image.
-4. Existing container is stopped.
-5. New container is deployed.
-6. Updated application becomes available.
-
----
-
 # Docker Maintenance Commands
 
-List Containers.
-
 ```bash
+# List containers
 sudo docker ps
-```
 
-Stop Container.
-
-```bash
+# Stop container
 sudo docker stop <container-id>
-```
 
-Remove Container.
-
-```bash
+# Remove container
 sudo docker rm <container-id>
-```
 
-View Logs.
-
-```bash
+# View logs
 sudo docker logs <container-id>
-```
 
-List Images.
-
-```bash
+# List images
 sudo docker images
-```
 
-Remove Image.
-
-```bash
+# Remove image
 sudo docker rmi <image-id>
 ```
 
----
-
-# Learning Outcomes
-
-This project helped in gaining hands-on experience with:
-
-* Git and GitHub Workflow
-* Linux Commands and Server Administration
-* AWS EC2 Management
-* Docker Containerization
-* Jenkins Automation
-* CI/CD Pipeline Implementation
-* Application Deployment Automation
-* Troubleshooting Deployment Issues
-* Infrastructure Management
-
----
-
 # Future Improvements
 
-* Jenkins Pipeline as Code (Jenkinsfile)
-* Docker Compose
-* Nginx Reverse Proxy
-* HTTPS/SSL Configuration
-* Docker Hub Integration
-* Kubernetes Deployment
-* Terraform Infrastructure Automation
-* SonarQube Code Quality Scans
-* Prometheus Monitoring
-* Grafana Dashboards
-
----
+- Jenkinsfile
+- Docker Compose
+- Nginx Reverse Proxy
+- HTTPS/SSL
+- Docker Hub
+- Kubernetes
+- Terraform
+- SonarQube
+- Prometheus and Grafana
 
 ## Author
 
