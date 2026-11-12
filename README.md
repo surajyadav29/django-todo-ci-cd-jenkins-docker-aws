@@ -174,12 +174,11 @@ Replace [container-id] with the Jenkins container ID.
 
 Open Jenkins and paste the password into the Unlock Jenkins page.
 
-Configure Jenkins Agent:
-
 Get the current working directory:
 
 pwd
 
+Configure Jenkins Agent:
 ```text
 Name : todo-agent
 Remote Root Directory : <output of pwd>
