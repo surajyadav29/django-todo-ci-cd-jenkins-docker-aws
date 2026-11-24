@@ -189,6 +189,20 @@ COPY . .
 EXPOSE 8000
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+
+This means install all Python packages listed in the requirements.txt file.
+Simple explanation
+- pip – Python package installer.
+- install – Installs packages.
+- -r – Reads a requirements file.
+- requirements.txt – Contains the names and versions of Python packages required by your Django project.
+Example
+Suppose your requirements.txt contains:
+Django==6.0.5
+requests==2.32.3
+gunicorn==23.0.0
+
 ```
 
 ## Step 11: Build Docker Image
