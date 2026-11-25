@@ -229,6 +229,19 @@ http://YOUR_PUBLIC_IP:8000/
 
 ## Step 13: Install Jenkins Using Docker
 
+Install Java
+sudo dnf install java-21-amazon-corretto-headless -y
+
+Verify Java
+
+java -version
+
+Keep this terminal open while the agent is running.
+Step 4: Verify Jenkins connection
+Go to:
+
+Jenkins → Manage Jenkins → Nodes → todo-agent
+
 Pull Jenkins image:
 
 ```bash
@@ -251,6 +264,7 @@ View Jenkins logs:
 
 ```bash
 sudo docker logs <container-id>
+
 ```
 
 Jenkins URL:
@@ -278,6 +292,26 @@ Open Jenkins and paste the password into the Unlock Jenkins page.
 ```bash
 pwd
 ```
+
+Download Jenkins agent
+
+cd /home/ec2-user
+
+curl -O http://13.51.207.114:8080/jnlpJars/agent.jar
+
+Verify:
+ls -lh agent.jar
+
+ Connect your Jenkins agent
+Use the newly generated secret from the replacement agent's Status page.
+
+Run this command, replacing NEW_SECRET with that secret:
+java -jar agent.jar \
+-url http://13.51.207.114:8080/ \
+-secret NEW_SECRET \
+-name "todo-agent" \
+-webSocket \
+-workDir "/home/ec2-user"
 
 ### Configure Jenkins Agent
 
