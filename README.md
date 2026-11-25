@@ -33,7 +33,7 @@ cd django-todo-ci-cd-jenkins-docker-aws
 Install Python 3.12 and pip:
 
 ```bash
-sudo dnf install python3.12 python3.12-pip -y
+sudo yum install python3.12 python3.12-pip -y
 ```
 
 **Understanding Python and pip:**
@@ -77,6 +77,12 @@ Create virtual environment:
 
 ```bash
 python3.12 -m venv venv
+
+Part	Meaning
+python3.12	Runs Python version 3.12
+-m	Runs a Python module
+venv (first)	Python's built-in virtual environment module
+venv (second)	Name of the virtual environment folder
 ```
 
 Activate virtual environment:
@@ -111,6 +117,12 @@ Check Django version:
 
 ```bash
 python -m django --version
+
+Part	Meaning
+python	Starts the Python interpreter
+-m	Runs a Python module
+django	Name of the module
+--version	Displays the Django version
 ```
 
 ## Step 6: Configure Django Settings
@@ -233,10 +245,12 @@ Install Java
 sudo dnf install java-21-amazon-corretto-headless -y
 
 Verify Java
-
 java -version
 
-Keep this terminal open while the agent is running.
+Check Java location
+which java
+
+Keep this terminal open while the agent is running. 
 Step 4: Verify Jenkins connection
 Go to:
 
@@ -272,6 +286,43 @@ Jenkins URL:
 ```text
 http://YOUR_PUBLIC_IP:8080
 ```
+
+OR 
+
+
+Install jenkins from command 
+
+1. Install Java 21
+sudo dnf install java-21-amazon-corretto -y
+
+
+2. Add Jenkins repository
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/rpm-stable/jenkins.repo
+
+
+3. Import Jenkins key
+sudo rpm --import https://pkg.jenkins.io/rpm-stable/jenkins.io-2026.key
+
+
+4. Install Jenkins
+sudo dnf install jenkins -y
+
+
+5. Start Jenkins automatically
+sudo systemctl enable --now jenkins
+
+
+6. Check Jenkins status
+sudo systemctl status jenkins
+
+
+7. Get initial admin password
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+8. Open Jenkins
+http://YOUR-EC2-PUBLIC-IP:8080
+
+Ensure your EC2 Security Group allows inbound TCP port 8080.
 
 ## Step 14: Configure Jenkins Agent
 
@@ -325,23 +376,31 @@ Labels : todo
 
 ## Step 15: Create Jenkins Build Job
 
-Configure the following:
+# permission of jenkins agent to project from ec2 terminal
+chmod 777 (project name/) (permission to every user of read, write and execute)
 
-- Source Code Management → Git
-- Repository URL → GitHub repository
-- Build Trigger → Build Now / GitHub Webhook
-- Agent Label → todo
+# kill old project 8000 container
+sudo docker ps -a 
+sudo docker stop (container id)
+sudo docker rm (container id)
+
+verify 
+sudo docker ps -a 
+
+# build steps - Execute shell
+
+Go to project directory
+cd /home/ec2-user/django-todo-ci-cd-jenkins-docker-aws
 
 ### Build command
-
 ```bash
-sudo docker build . -t todo
+docker build . -t todo
 ```
 
 ### Deployment command
 
 ```bash
-sudo docker run -d -p 8000:8000 todo
+docker run -d -p 8000:8000 todo
 ```
 
 ## Docker Maintenance Commands
