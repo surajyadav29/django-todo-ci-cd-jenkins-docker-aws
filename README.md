@@ -387,7 +387,9 @@ sudo docker stop todo-app || true
 sudo docker rm todo-app || true
 sudo docker run -d -p 8000:8000 --name todo-app todo
 sudo docker exec todo-app python manage.py migrate
+```
 
+```bash
 sudo docker ps
 ```
 
