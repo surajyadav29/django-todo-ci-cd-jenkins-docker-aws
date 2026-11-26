@@ -1,16 +1,67 @@
 # Django Todo CI/CD Deployment Using AWS EC2, Docker and Jenkins
 
-## Step 1: Launch AWS EC2 Instance
+A hands-on DevOps project demonstrating automated deployment of a Django Todo application using **AWS EC2, Docker, Jenkins, and GitHub**.
 
-- Launch an Amazon Linux EC2 instance.
-- Create/select a key pair.
-- Configure Security Group inbound rules:
+## Project Overview
+
+This project automates the deployment of a Django Todo application using Jenkins CI/CD.
+
+Whenever code is updated in GitHub, Jenkins can execute the deployment process on an EC2 Jenkins agent, build a Docker image, and deploy the updated application.
+
+## Technologies Used
+
+- AWS EC2
+- Amazon Linux
+- Git and GitHub
+- Python 3.12
+- Django
+- Docker
+- Jenkins
+- Linux
+
+## Architecture
+
+```text
+Developer
+    |
+    v
+GitHub Repository
+    |
+    v
+Jenkins Controller (EC2)
+    |
+    v
+Jenkins Agent (EC2)
+    |
+    v
+Docker Build
+    |
+    v
+Docker Container
+    |
+    v
+Django Todo Application
+    |
+    v
+Browser (Port 8000)
+```
+
+## Step 1: Launch AWS EC2 Instances
+
+Launch two Amazon Linux EC2 instances:
+
+1. Jenkins Controller
+2. Jenkins Agent / Application Server
+
+Configure the required Security Group rules.
 
 | Port | Purpose |
 |---|---|
-| 22 | SSH |
-| 8000 | Django Application |
-| 8080 | Jenkins |
+| 22 | SSH access |
+| 8000 | Django application |
+| 8080 | Jenkins web interface |
+
+Restrict access to these ports to trusted IP addresses or security groups wherever possible.
 
 Connect to EC2:
 
@@ -20,72 +71,45 @@ ssh -i "your-key.pem" ec2-user@YOUR_PUBLIC_IP
 
 ## Step 2: Install Git and Clone Repository
 
+Install Git:
+
 ```bash
 sudo yum install -y git
+```
 
+Clone the repository:
+
+```bash
 git clone https://github.com/surajyadav29/django-todo-ci-cd-jenkins-docker-aws.git
+```
 
+Go to the project directory:
+
+```bash
 cd django-todo-ci-cd-jenkins-docker-aws
 ```
 
-## Step 3: Install Python 3.12 and Create Virtual Environment
+## Step 3: Install Python 3.12
 
-Install Python 3.12 and pip:
+Install Python:
 
 ```bash
-sudo yum install python3.12 python3.12-pip -y
+sudo yum install -y python3.12 python3.12-pip
 ```
 
-**Understanding Python and pip:**
-
-**1. `python3.12` – Python interpreter**
-
-Meaning: Python interpreter is software that understands and executes Python code.
-
-Example:
+Check the version:
 
 ```bash
 python3.12 --version
 ```
 
-**2. `python3.12-pip` – pip package manager**
-
-Meaning: pip is a tool used to install Python libraries and packages.
-
-Example:
-
-```bash
-pip install django
-```
-
-**Difference between Python and pip:**
-
-| Python 3.12 | pip |
-|---|---|
-| Executes Python code | Installs Python packages |
-| Runs Django application | Installs Django |
-| Runs manage.py | Installs project requirements |
-| Works as an interpreter | Works as a package manager |
-
-Check Python version:
-
-```bash
-python3.12 --version
-```
-
-Create virtual environment:
+Create a virtual environment:
 
 ```bash
 python3.12 -m venv venv
-
-Part	Meaning
-python3.12	Runs Python version 3.12
--m	Runs a Python module
-venv (first)	Python's built-in virtual environment module
-venv (second)	Name of the virtual environment folder
 ```
 
-Activate virtual environment:
+Activate it:
 
 ```bash
 source venv/bin/activate
@@ -105,45 +129,31 @@ Install project dependencies:
 pip install -r requirements.txt
 ```
 
-## Step 5: Verify Python and Django
-
-Check Python version:
-
-```bash
-python --version
-```
-
 Check Django version:
 
 ```bash
 python -m django --version
-
-Part	Meaning
-python	Starts the Python interpreter
--m	Runs a Python module
-django	Name of the module
---version	Displays the Django version
 ```
 
-## Step 6: Configure Django Settings
+## Step 5: Configure Django Settings
 
-Open settings file:
+Open the settings file:
 
 ```bash
 nano todoApp/settings.py
 ```
 
-Update `ALLOWED_HOSTS` with your EC2 Public IPv4 address:
+Update `ALLOWED_HOSTS`:
 
 ```python
 ALLOWED_HOSTS = ['YOUR_PUBLIC_IP', 'localhost', '127.0.0.1']
 ```
 
-Save: `Ctrl + O` → `Enter` → `Ctrl + X`.
+Save the file.
 
-## Step 7: Check Configuration and Apply Migrations
+## Step 6: Check Django and Apply Migrations
 
-Check Django configuration:
+Check the Django configuration:
 
 ```bash
 python manage.py check
@@ -155,37 +165,15 @@ Apply database migrations:
 python manage.py migrate
 ```
 
-## Step 8: Run Django Application
+## Step 7: Create Dockerfile
+
+Create the Dockerfile:
 
 ```bash
-python manage.py runserver 0.0.0.0:8000
+nano Dockerfile
 ```
 
-Application URL:
-
-```text
-http://YOUR_PUBLIC_IP:8000/
-```
-
-## Step 9: Install Docker
-
-```bash
-sudo yum install docker -y
-
-sudo systemctl start docker
-
-sudo systemctl enable docker
-
-docker --version
-```
-
-## Step 10: Create Dockerfile
-
-```bash
-vi Dockerfile
-```
-
-Add:
+Add the following configuration:
 
 ```dockerfile
 FROM python:3.12
@@ -194,78 +182,84 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
 EXPOSE 8000
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-
-
-This means install all Python packages listed in the requirements.txt file.
-Simple explanation
-- pip – Python package installer.
-- install – Installs packages.
-- -r – Reads a requirements file.
-- requirements.txt – Contains the names and versions of Python packages required by your Django project.
-Example
-Suppose your requirements.txt contains:
-Django==6.0.5
-requests==2.32.3
-gunicorn==23.0.0
-
 ```
 
-## Step 11: Build Docker Image
+### Dockerfile Explanation
+
+| Instruction | Purpose |
+|---|---|
+| FROM | Selects the Python base image |
+| WORKDIR | Sets the working directory |
+| COPY | Copies project files |
+| RUN | Executes commands during image creation |
+| EXPOSE | Documents the application port |
+| CMD | Starts the Django application |
+
+## Step 8: Create .dockerignore
+
+Create the `.dockerignore` file:
 
 ```bash
-sudo docker build . -t todo
+nano .dockerignore
+```
 
+Add:
+
+```text
+venv/
+.venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.env
+*.sqlite3
+.vscode/
+.idea/
+```
+
+This prevents unnecessary files from being included in the Docker build context.
+
+## Step 9: Build Docker Image
+
+Install Docker if it is not already installed:
+
+```bash
+sudo yum install -y docker
+```
+
+Start Docker:
+
+```bash
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+Build the image:
+
+```bash
+sudo docker build -t todo .
+```
+
+Check Docker images:
+
+```bash
 sudo docker images
 ```
 
-## Step 12: Run Docker Container
+## Step 10: Run Docker Container
+
+Run the application:
 
 ```bash
 sudo docker run -d -p 8000:8000 --name todo-app todo
-
-sudo docker ps
-```
-
-Application URL:
-
-```text
-http://YOUR_PUBLIC_IP:8000/
-```
-
-## Step 13: Install Jenkins Using Docker
-
-Install Java
-sudo dnf install java-21-amazon-corretto-headless -y
-
-Verify Java
-java -version
-
-Check Java location
-which java
-
-Keep this terminal open while the agent is running. 
-Step 4: Verify Jenkins connection
-Go to:
-
-Jenkins → Manage Jenkins → Nodes → todo-agent
-
-Pull Jenkins image:
-
-```bash
-sudo docker pull jenkins/jenkins:latest
-```
-
-Run Jenkins container:
-
-```bash
-sudo docker run -d -p 8080:8080 docker.io/jenkins/jenkins:latest
 ```
 
 Check running containers:
@@ -274,160 +268,238 @@ Check running containers:
 sudo docker ps
 ```
 
-View Jenkins logs:
-
-```bash
-sudo docker logs <container-id>
-
-```
-
-Jenkins URL:
+Access the application:
 
 ```text
-http://YOUR_PUBLIC_IP:8080
+http://YOUR_PUBLIC_IP:8000/todos/
 ```
 
-OR 
+Ensure Django allows the EC2 public IP in `ALLOWED_HOSTS`.
 
+Stop the directly running Django development server before using the same host port for Docker.
 
-Install jenkins from command 
+## Step 11: Install Jenkins on Controller EC2 Using Docker
 
-1. Install Java 21
-sudo dnf install java-21-amazon-corretto -y
-
-
-2. Add Jenkins repository
-sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/rpm-stable/jenkins.repo
-
-
-3. Import Jenkins key
-sudo rpm --import https://pkg.jenkins.io/rpm-stable/jenkins.io-2026.key
-
-
-4. Install Jenkins
-sudo dnf install jenkins -y
-
-
-5. Start Jenkins automatically
-sudo systemctl enable --now jenkins
-
-
-6. Check Jenkins status
-sudo systemctl status jenkins
-
-
-7. Get initial admin password
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-
-8. Open Jenkins
-http://YOUR-EC2-PUBLIC-IP:8080
-
-Ensure your EC2 Security Group allows inbound TCP port 8080.
-
-## Step 14: Configure Jenkins Agent
-
-### Unlock Jenkins
-
-Get the initial administrator password:
+Install Java 21:
 
 ```bash
-sudo docker exec <container-id> cat /var/jenkins_home/secrets/initialAdminPassword
+sudo yum install java-21-amazon-corretto-headless -y
 ```
 
-Replace `<container-id>` with the Jenkins container ID.
-
-Open Jenkins and paste the password into the Unlock Jenkins page.
-
-### Get the current working directory
+Verify Java:
 
 ```bash
-pwd
+java -version
 ```
 
-### Configure Jenkins Agent
+Pull the Jenkins image:
 
-```text
-Name : todo-agent
-
-Remote Root Directory : <output of pwd>
-
-Labels : todo
+```bash
+sudo docker pull jenkins/jenkins:latest
 ```
 
-## Step 15: Create Jenkins Build Job
+Run Jenkins with persistent storage:
 
-# permission of jenkins agent to project from ec2 terminal
-chmod 777 (project name/) (permission to every user of read, write and execute)
+```bash
+sudo docker run -d -p 8080:8080 docker.io/jenkins/jenkins:latest
+```
 
-# kill old project 8000 container
-sudo docker ps -a 
-sudo docker kill (container id)
-
-verify 
-sudo docker ps -a 
-
-# connect to agent from terminal
-
-Download Jenkins agent
-
-cd /home/ec2-user
-
-curl -O http://13.51.207.114:8080/jnlpJars/agent.jar
-
-Verify:
-ls -lh agent.jar
-
- Connect your Jenkins agent
-Use the newly generated secret from the replacement agent's Status page.
-
-Run this command for detach mode terminal, replacing NEW_SECRET with that secret:
-nohup java -jar agent.jar -url http://13.60.205.22:8080/ -secret a41ce45b8f531116b6308407f6bb576e291188b9013686a213cd57c1de77db38 -name a -webSocket -workDir
- "/home/ec2-user" > jenkins-agent.log 2>&1 &
-
-# build steps - Execute shell
-
-Go to project directory
-cd /home/ec2-user/django-todo-ci-cd-jenkins-docker-aws
-
-sudo docker build -t todo .
-
-sudo docker stop todo-app || true
-sudo docker rm todo-app || true
-
-sudo docker run -d -p 8000:8000 --name todo-app todo
-
-sudo docker exec todo-app python manage.py migrate
-
-# after any changes 
+Check the container:
 
 ```bash
 sudo docker ps
 ```
 
-### Stop container
+Get the initial administrator password:
 
 ```bash
-sudo docker kill <container-id>
-
+sudo docker exec (container id) cat /var/jenkins_home/secrets/initialAdminPassword
 ```
 
-### View logs
+Open Jenkins:
+
+```text
+http://YOUR_CONTROLLER_PUBLIC_IP:8080
+```
+
+Unlock Jenkins, install the suggested plugins, and create your administrator account.
+
+## Step 12: Configure Jenkins Agent
+
+In Jenkins, navigate to:
+
+```text
+Manage Jenkins → Nodes → New Node
+```
+
+Configure the agent:
+
+| Setting | Value |
+|---|---|
+| Name | todo-agent |
+| Remote Root Directory | /home/ec2-user |
+| Labels | todo |
+| Launch method | Launch agent by connecting it to the controller |
+
+Enable WebSocket connection if available.
+
+Save the configuration and open the agent's Status page.
+
+Download the agent JAR on the Agent EC2:
 
 ```bash
-sudo docker logs <container-id>
+cd /home/ec2-user
+
+curl -sO http://YOUR_CONTROLLER_PUBLIC_IP:8080/jnlpJars/agent.jar
 ```
-# to diconnect agent from terminal 
 
+Connect the agent using the newly generated secret from the Jenkins agent Status page at detach mode:
+
+```bash
+nohup java -jar agent.jar \
+-url http://YOUR_CONTROLLER_PUBLIC_IP:8080/ \
+-secret YOUR_NEW_AGENT_SECRET \
+-name todo-agent \
+-webSocket \
+-workDir /home/ec2-user \
+> jenkins-agent.log 2>&1 &
+```
+
+Keep the agent process running while Jenkins jobs are using it.
+
+## Step 13: Create Jenkins Build Job
+
+1. Open Jenkins.
+2. Select **New Item**.
+3. Enter the job name: `django-todo-deployment`.
+4. Select **Freestyle project**.
+5. Open Configure.
+
+```
+6. Under Build Steps, select **Execute shell**.
+
+Add the deployment script:
+
+```bash
+cd /home/ec2-user/django-todo-ci-cd-jenkins-docker-aws
+sudo docker build -t todo .
+sudo docker stop todo-app || true
+sudo docker rm todo-app || true
+sudo docker run -d -p 8000:8000 --name todo-app todo
+sudo docker exec todo-app python manage.py migrate
+
+sudo docker ps
+```
+
+Save the job.
+
+Click **Build Now** to execute the deployment.
+
+## Step 14: Verify Deployment
+
+Check the Jenkins build status:
+
+```text
+Jenkins → Your Job → Build History → Console Output
+```
+
+Expected result:
+
+```text
+Finished: SUCCESS
+```
+
+Check Docker containers on the Agent EC2:
+
+```bash
+sudo docker ps
+```
+
+Open the application:
+
+```text
+http://YOUR_AGENT_PUBLIC_IP:8000/todos/
+```
+
+## Step 15: GitHub Commands
+
+Check modified files:
+
+```bash
+git status
+```
+
+Add changes:
+
+```bash
+git add .
+```
+
+Commit:
+
+```bash
+git commit -m "Update Django application and Docker configuration"
+```
+
+Push:
+
+```bash
+git push origin main
+```
+
+Keep the `venv/` directory excluded using `.gitignore`.
+
+Example `.gitignore` entries:
+
+```gitignore
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+*.sqlite3
+.vscode/
+.idea/
+```
+
+Use a GitHub Personal Access Token when Git requests an HTTPS password. Never commit tokens or Jenkins agent secrets.
+
+## Step 16: Disconnect Jenkins Agent
+
+Find the agent process:
+
+```bash
 ps -ef | grep '[a]gent.jar'
+```
 
-Find the agent process PID, then stop it:
-kill 35773
+Stop it using its actual process ID:
 
-Check that it stopped:
+```bash
+kill YOUR_AGENT_PID
+```
+
+Verify:
+
+```bash
 ps -ef | grep '[a]gent.jar'
+```
 
-## Author
+## Important Notes
+
+- Jenkins Controller and Jenkins Agent can run on separate EC2 instances.
+- The Jenkins Agent needs Docker installed and permission to execute Docker commands.
+- The agent must be connected for Jenkins to deploy through that agent.
+- Docker containers continue running independently after a Jenkins job is deleted.
+- The SQLite database inside a container can be lost when the container is removed. Persistent storage is needed to retain application data.
+- Django's `runserver` is for development and demonstration, not production deployment. A production setup should use a production application server such as Gunicorn and an appropriate web server.
+- Restrict SSH, Jenkins and application ports to trusted sources.
+
+## Project Author
 
 **Suraj Yadav**
 
 DevOps Engineer | AWS | Docker | Jenkins | CI/CD
+
+GitHub Repository:
+
+https://github.com/surajyadav29/django-todo-ci-cd-jenkins-docker-aws
