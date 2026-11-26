@@ -423,6 +423,14 @@ Open the application:
 http://YOUR_AGENT_PUBLIC_IP:8000/todos/
 ```
 
+# After any changes at project
+
+sudo docker ps -a
+
+sudo docker kill (container id)
+
+Jenkins - Build Now ( It will run the container and do changes)
+
 ## Step 15: GitHub Commands
 
 Check modified files:
