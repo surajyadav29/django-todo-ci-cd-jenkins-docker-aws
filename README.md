@@ -431,6 +431,8 @@ sudo docker kill (container id)
 
 Jenkins - Build Now ( It will run the container and do changes)
 
+OR
+
 ## Step 15: GitHub Commands
 
 Check modified files:
@@ -456,6 +458,9 @@ Push:
 ```bash
 git push origin main
 ```
+
+Jenkins - Build now 
+Changes will be done 
 
 Keep the `venv/` directory excluded using `.gitignore`.
 
@@ -509,7 +514,3 @@ ps -ef | grep '[a]gent.jar'
 **Suraj Yadav**
 
 DevOps Engineer | AWS | Docker | Jenkins | CI/CD
-
-GitHub Repository:
-
-https://github.com/surajyadav29/django-todo-ci-cd-jenkins-docker-aws
