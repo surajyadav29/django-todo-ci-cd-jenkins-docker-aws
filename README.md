@@ -424,48 +424,6 @@ http://YOUR_AGENT_PUBLIC_IP:8000/todos/
 ```
 
 
-
-
-
-# After any changes at project
-
-sudo docker ps -a 
-
-sudo docker kill (container id)
-
-Jenkins - Build Now ( It will run the container and do changes)
-
-OR
-
-## Step 15: GitHub Commands
-
-Check modified files:
-
-```bash
-git status
-```
-
-Add changes:
-
-```bash
-git add .
-```
-
-Commit:
-
-```bash
-git commit -m "Update Django application and Docker configuration"
-```
-
-Push:
-
-```bash
-git push origin main
-```
-
-# Jenkins - Build now 
-Changes will be done 
-
 ### Automatic Deployment Using Jenkins Poll SCM
 
 1. Make changes to the project files.
@@ -494,14 +452,13 @@ Changes will be done
 ### Method 1: Manual Deployment Using Jenkins
 
 1. Make changes to your project files.
-2. Open the Agent EC2 terminal and check the Docker containers.
-3. Open Jenkins → Job → **Build Now**.
-4. Jenkins automatically:
+2. Open Jenkins → Job → **Build Now**.
+3. Jenkins automatically:
    - Builds a new Docker image.
    - Removes the old `todo-app` container.
    - Creates and runs a new container.
    - Applies Django database migrations.
-5. Open the website to verify the changes.
+4. Open the website to verify the changes.
 
 **Note:** Do not manually kill the container. The Jenkins deployment script handles container replacement.
 
@@ -556,7 +513,6 @@ git push origin main
 After pushing changes to GitHub:
 
 - Manual deployment: Open Jenkins → **Build Now**.
-- Automatic deployment: Jenkins detects the new commit through Poll SCM and starts the build.
 
 ---
 
