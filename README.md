@@ -425,7 +425,7 @@ http://YOUR_AGENT_PUBLIC_IP:8000/todos/
 
 # After any changes at project
 
-sudo docker ps -a
+sudo docker ps -a  OR lsof -i:8000
 
 sudo docker kill (container id)
 
