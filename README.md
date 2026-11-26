@@ -423,9 +423,13 @@ Open the application:
 http://YOUR_AGENT_PUBLIC_IP:8000/todos/
 ```
 
+
+
+
+
 # After any changes at project
 
-sudo docker ps -a  OR lsof -i:8000
+sudo docker ps -a 
 
 sudo docker kill (container id)
 
@@ -459,12 +463,132 @@ Push:
 git push origin main
 ```
 
-Jenkins - Build now 
+# Jenkins - Build now 
 Changes will be done 
 
-Keep the `venv/` directory excluded using `.gitignore`.
+### Automatic Deployment Using Jenkins Poll SCM
 
-Example `.gitignore` entries:
+1. Make changes to the project files.
+2. Push or commit the changes to the GitHub repository.
+3. Open Jenkins → Job → Configure → Build Triggers.
+4. Enable **Poll SCM**.
+5. Set the schedule:
+
+   ```text
+   * * * * *
+   ```
+
+6. Save the configuration.
+
+**Working:**
+- Jenkins checks the GitHub repository every minute.
+- If Jenkins detects new code changes, it automatically starts the build.
+- Jenkins builds a new Docker image.
+- Jenkins removes the old container and starts a new container.
+- The updated application becomes available on the website.
+
+**Result:** Changes pushed to GitHub are automatically deployed to the website without manually clicking Build Now.
+
+## After Making Changes to the Project
+
+### Method 1: Manual Deployment Using Jenkins
+
+1. Make changes to your project files.
+2. Open the Agent EC2 terminal and check the Docker containers.
+3. Open Jenkins → Job → **Build Now**.
+4. Jenkins automatically:
+   - Builds a new Docker image.
+   - Removes the old `todo-app` container.
+   - Creates and runs a new container.
+   - Applies Django database migrations.
+5. Open the website to verify the changes.
+
+**Note:** Do not manually kill the container. The Jenkins deployment script handles container replacement.
+
+OR
+
+```bash
+sudo docker ps -a
+```
+
+To check whether port 8000 is in use:
+
+```bash
+sudo lsof -i :8000
+```
+
+Remove Old Container 
+```bash
+sudo docker kill (container id)
+```
+Open Jenkins → Job → **Build Now**.
+
+---
+
+## Step 15: GitHub Commands
+
+**Check modified files:**
+
+```bash
+git status
+```
+
+**Add changes:**
+
+```bash
+git add .
+```
+
+**Commit changes:**
+
+```bash
+git commit -m "Update Django application and Docker configuration"
+```
+
+**Push changes to GitHub:**
+
+```bash
+git push origin main
+```
+
+### Jenkins Deployment
+
+After pushing changes to GitHub:
+
+- Manual deployment: Open Jenkins → **Build Now**.
+- Automatic deployment: Jenkins detects the new commit through Poll SCM and starts the build.
+
+---
+
+## Automatic Deployment Using Jenkins Poll SCM
+
+1. Make changes to the project files.
+2. Push changes to the GitHub repository.
+3. Open Jenkins → Job → Configure → Build Triggers.
+4. Enable **Poll SCM**.
+5. Set the schedule:
+
+```text
+* * * * *
+```
+
+6. Click Save.
+
+**Working:**
+
+- Jenkins checks GitHub every minute.
+- If Jenkins detects a new commit, it automatically starts the build.
+- Jenkins builds a new Docker image.
+- Jenkins removes the old container and starts a new container.
+- The updated application becomes available on the website after successful deployment.
+
+**Result:** Changes pushed to GitHub are automatically deployed without manually clicking Build Now.
+
+---
+
+### Important: Keep Virtual Environment Excluded
+
+Add the following to `.gitignore`:
 
 ```gitignore
 venv/
@@ -473,11 +597,9 @@ __pycache__/
 *.pyc
 .env
 *.sqlite3
-.vscode/
-.idea/
 ```
 
-Use a GitHub Personal Access Token when Git requests an HTTPS password. Never commit tokens or Jenkins agent secrets.
+This prevents your local Python virtual environment and unnecessary files from being pushed to GitHub.
 
 ## Step 16: Disconnect Jenkins Agent
 
