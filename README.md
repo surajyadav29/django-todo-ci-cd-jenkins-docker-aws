@@ -344,26 +344,6 @@ Open Jenkins and paste the password into the Unlock Jenkins page.
 pwd
 ```
 
-Download Jenkins agent
-
-cd /home/ec2-user
-
-curl -O http://13.51.207.114:8080/jnlpJars/agent.jar
-
-Verify:
-ls -lh agent.jar
-
- Connect your Jenkins agent
-Use the newly generated secret from the replacement agent's Status page.
-
-Run this command, replacing NEW_SECRET with that secret:
-java -jar agent.jar \
--url http://13.51.207.114:8080/ \
--secret NEW_SECRET \
--name "todo-agent" \
--webSocket \
--workDir "/home/ec2-user"
-
 ### Configure Jenkins Agent
 
 ```text
@@ -381,31 +361,44 @@ chmod 777 (project name/) (permission to every user of read, write and execute)
 
 # kill old project 8000 container
 sudo docker ps -a 
-sudo docker stop (container id)
-sudo docker rm (container id)
+sudo docker kill (container id)
 
 verify 
 sudo docker ps -a 
+
+# connect to agent from terminal
+
+Download Jenkins agent
+
+cd /home/ec2-user
+
+curl -O http://13.51.207.114:8080/jnlpJars/agent.jar
+
+Verify:
+ls -lh agent.jar
+
+ Connect your Jenkins agent
+Use the newly generated secret from the replacement agent's Status page.
+
+Run this command for detach mode terminal, replacing NEW_SECRET with that secret:
+nohup java -jar agent.jar -url http://13.60.205.22:8080/ -secret a41ce45b8f531116b6308407f6bb576e291188b9013686a213cd57c1de77db38 -name a -webSocket -workDir
+ "/home/ec2-user" > jenkins-agent.log 2>&1 &
 
 # build steps - Execute shell
 
 Go to project directory
 cd /home/ec2-user/django-todo-ci-cd-jenkins-docker-aws
 
-### Build command
-```bash
-docker build . -t todo
-```
+sudo docker build -t todo .
 
-### Deployment command
+sudo docker stop todo-app || true
+sudo docker rm todo-app || true
 
-```bash
-docker run -d -p 8000:8000 todo
-```
+sudo docker run -d -p 8000:8000 --name todo-app todo
 
-## Docker Maintenance Commands
+sudo docker exec todo-app python manage.py migrate
 
-### List containers
+# after any changes 
 
 ```bash
 sudo docker ps
@@ -414,13 +407,8 @@ sudo docker ps
 ### Stop container
 
 ```bash
-sudo docker stop <container-id>
-```
+sudo docker kill <container-id>
 
-### Remove container
-
-```bash
-sudo docker rm <container-id>
 ```
 
 ### View logs
@@ -428,18 +416,15 @@ sudo docker rm <container-id>
 ```bash
 sudo docker logs <container-id>
 ```
+# to diconnect agent from terminal 
 
-### List images
+ps -ef | grep '[a]gent.jar'
 
-```bash
-sudo docker images
-```
+Find the agent process PID, then stop it:
+kill 35773
 
-### Remove image
-
-```bash
-sudo docker rmi <image-id>
-```
+Check that it stopped:
+ps -ef | grep '[a]gent.jar'
 
 ## Author
 
