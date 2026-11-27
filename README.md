@@ -374,8 +374,6 @@ Keep the agent process running while Jenkins jobs are using it.
 3. Enter the job name: `django-todo-deployment`.
 4. Select **Freestyle project**.
 5. Open Configure.
-
-```
 6. Under Build Steps, select **Execute shell**.
 
 Add the deployment script:
