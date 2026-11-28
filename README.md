@@ -165,6 +165,12 @@ Apply database migrations:
 python manage.py migrate
 ```
 
+Start the server
+
+```bash
+python manage.py runserver 0.0.0.0:8000
+```
+
 ## Step 7: Create Dockerfile
 
 Create the Dockerfile:
